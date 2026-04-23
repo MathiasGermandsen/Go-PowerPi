@@ -9,7 +9,6 @@ func NewRouter() *mux.Router {
 
 	r.HandleFunc("/power-table", GetPowerTable).Methods("GET")
 	r.HandleFunc("/power-table", CreatePowerTable).Methods("POST")
-	r.HandleFunc("/power-table/truncate", TruncatePowerTable).Methods("DELETE")
 
 	return r
 }
