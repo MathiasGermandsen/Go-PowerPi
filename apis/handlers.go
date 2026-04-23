@@ -53,3 +53,12 @@ func CreatePowerTable(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(req)
 }
+
+func TruncatePowerTable(w http.ResponseWriter, r *http.Request) {
+	if result := database.DB.Exec("TRUNCATE TABLE power_tables RESTART IDENTITY CASCADE"); result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
