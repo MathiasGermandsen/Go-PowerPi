@@ -1,0 +1,301 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Service-to-service API for Power Table management. All /power-table endpoints require a JWT Bearer token. Admin endpoints require an X-Admin-Key header.",
+        "title": "Power-Pi API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/admin/tokens": {
+            "post": {
+                "description": "Issues a new HS256 JWT for a named service with a specific audience and scopes.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Issue a service token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Admin API key",
+                        "name": "X-Admin-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Token request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apis.IssueTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/apis.TokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "service, audience, and scopes are required",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/tokens/revoked": {
+            "get": {
+                "description": "Returns the full revocation list. Useful for auditing and verifying that a token has been properly revoked.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "List revoked tokens",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Admin API key",
+                        "name": "X-Admin-Key",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/apis.RevokedTokenDoc"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/tokens/rotate": {
+            "post": {
+                "description": "Revokes the token identified by old_jti and issues a new token with the provided service, audience, and scopes.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Rotate a service token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Admin API key",
+                        "name": "X-Admin-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Rotation request (old_jti is required)",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apis.IssueTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.TokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "service, audience, scopes, and old_jti are required",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/tokens/{jti}": {
+            "delete": {
+                "description": "Permanently revokes the token identified by its JTI. The token cannot be used after this call even if it has not yet expired.",
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Revoke a service token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Admin API key",
+                        "name": "X-Admin-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JWT ID (jti claim) of the token to revoke",
+                        "name": "jti",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Token not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "apis.IssueTokenRequest": {
+            "type": "object",
+            "properties": {
+                "audience": {
+                    "type": "string"
+                },
+                "old_jti": {
+                    "description": "OldJTI is required only for token rotation (POST /admin/tokens/rotate).",
+                    "type": "string"
+                },
+                "scopes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "service": {
+                    "type": "string"
+                }
+            }
+        },
+        "apis.RevokedTokenDoc": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-04-24T10:00:00Z"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "jti": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "revokedAt": {
+                    "type": "string",
+                    "example": "2026-04-23T10:00:00Z"
+                }
+            }
+        },
+        "apis.TokenResponse": {
+            "type": "object",
+            "properties": {
+                "audience": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "jti": {
+                    "type": "string"
+                },
+                "scopes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "service": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "JWT service token. Format: \"Bearer {token}\". Obtain a token via POST /admin/tokens.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

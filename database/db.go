@@ -33,7 +33,7 @@ func Connect(cfg *config.Config) {
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(5 * time.Minute)
 
-	if err := db.AutoMigrate(&PowerTable{}); err != nil {
+	if err := db.AutoMigrate(&PowerTable{}, &RevokedToken{}, &ServiceRegistration{}); err != nil {
 		logger.Log.Fatal().Err(err).Msg("failed to auto-migrate")
 	}
 
