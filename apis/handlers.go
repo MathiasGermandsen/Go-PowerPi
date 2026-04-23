@@ -5,12 +5,20 @@ import (
 	"net/http"
 
 	"Power-Pi/database"
+
+	"gorm.io/gorm/clause"
 )
 
 func GetPowerTable(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("userId")
+	if userID == "" {
+		http.Error(w, "missing userId", http.StatusBadRequest)
+		return
+	}
+
 	var rows []database.PowerTable
 
-	if result := database.DB.Find(&rows); result.Error != nil {
+	if result := database.DB.Where("user_id = ?", userID).Find(&rows); result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -20,19 +28,28 @@ func GetPowerTable(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreatePowerTable(w http.ResponseWriter, r *http.Request) {
-	var row database.PowerTable
+	var req database.PowerTable
 
-	if err := json.NewDecoder(r.Body).Decode(&row); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if result := database.DB.Create(&row); result.Error != nil {
+	if req.UserID == "" {
+		http.Error(w, "missing userId", http.StatusBadRequest)
+		return
+	}
+
+	result := database.DB.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"company", "price"}),
+	}).Create(&req)
+	if result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(row)
+	json.NewEncoder(w).Encode(req)
 }
