@@ -1,8 +1,5 @@
 package apis
 
-// PowerTableDoc is used only for Swagger documentation.
-// It mirrors database.PowerTable without the embedded gorm.Model
-// so that swag can resolve all field types.
 type PowerTableDoc struct {
 	ID        uint    `json:"id" example:"1"`
 	CreatedAt string  `json:"createdAt" example:"2026-04-23T10:00:00Z"`
@@ -12,8 +9,6 @@ type PowerTableDoc struct {
 	UserID    string  `json:"userId" example:"user-abc-123"`
 }
 
-// RevokedTokenDoc is used only for Swagger documentation.
-// It mirrors database.RevokedToken without GORM internals.
 type RevokedTokenDoc struct {
 	ID        uint   `json:"id" example:"1"`
 	JTI       string `json:"jti" example:"550e8400-e29b-41d4-a716-446655440000"`

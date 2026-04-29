@@ -1,4 +1,4 @@
-package auth
+package middleware
 
 import (
 	"context"
@@ -10,11 +10,8 @@ import (
 
 type contextKey string
 
-// ClaimsContextKey is the key used to store JWT claims in the request context.
 const ClaimsContextKey contextKey = "claims"
 
-// JWTMiddleware validates the Bearer token from the Authorization header,
-// checks it against the revocation list, and injects the claims into the context.
 func JWTMiddleware(secret string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +33,6 @@ func JWTMiddleware(secret string) func(http.Handler) http.Handler {
 				return
 			}
 
-			// Check revocation list.
 			var revoked database.RevokedToken
 			if result := database.DB.Where("jti = ?", claims.ID).First(&revoked); result.Error == nil {
 				http.Error(w, "token has been revoked", http.StatusUnauthorized)
@@ -49,8 +45,6 @@ func JWTMiddleware(secret string) func(http.Handler) http.Handler {
 	}
 }
 
-// RequireScope wraps a handler and ensures the authenticated caller holds the given scope.
-// Must be used after JWTMiddleware so that claims are present in the context.
 func RequireScope(scope string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

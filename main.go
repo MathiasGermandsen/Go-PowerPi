@@ -1,14 +1,3 @@
-// @title           Power-Pi API
-// @version         1.0
-// @description     Service-to-service API for Power Table management. All /power-table endpoints require a JWT Bearer token. Admin endpoints require an X-Admin-Key header.
-// @host            localhost:8080
-// @BasePath        /
-//
-// @securityDefinitions.apikey  BearerAuth
-// @in                          header
-// @name                        Authorization
-// @description                 JWT service token. Format: "Bearer {token}". Obtain a token via POST /admin/tokens.
-
 package main
 
 import (

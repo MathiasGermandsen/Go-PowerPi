@@ -12,16 +12,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// IssueTokenRequest is the request body for issuing or rotating a service token.
 type IssueTokenRequest struct {
 	Service  string   `json:"service"`
 	Audience string   `json:"audience"`
 	Scopes   []string `json:"scopes"`
-	// OldJTI is required only for token rotation (POST /admin/tokens/rotate).
 	OldJTI string `json:"old_jti,omitempty"`
 }
 
-// TokenResponse is returned when a token is successfully issued or rotated.
 type TokenResponse struct {
 	Token     string   `json:"token"`
 	JTI       string   `json:"jti"`
@@ -31,23 +28,6 @@ type TokenResponse struct {
 	Scopes    []string `json:"scopes"`
 }
 
-// adminKeyMiddleware rejects requests that do not carry the correct X-Admin-Key header.
-// If the configured admin key is empty the server is misconfigured and all admin
-// requests are denied.
-func adminKeyMiddleware(adminKey string) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if adminKey == "" || r.Header.Get("X-Admin-Key") != adminKey {
-				http.Error(w, "forbidden", http.StatusForbidden)
-				return
-			}
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
-// IssueServiceToken issues a new JWT for a named service.
-//
 // @Summary      Issue a service token
 // @Description  Issues a new HS256 JWT for a named service with a specific audience and scopes.
 // @Tags         admin
@@ -104,8 +84,6 @@ func IssueServiceToken(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-// RevokeToken adds a token's JTI to the revocation list so it can no longer be used.
-//
 // @Summary      Revoke a service token
 // @Description  Permanently revokes the token identified by its JTI. The token cannot be used after this call even if it has not yet expired.
 // @Tags         admin
@@ -143,8 +121,6 @@ func RevokeToken(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-// RotateServiceToken revokes an existing service token and issues a replacement.
-//
 // @Summary      Rotate a service token
 // @Description  Revokes the token identified by old_jti and issues a new token with the provided service, audience, and scopes.
 // @Tags         admin
@@ -169,7 +145,6 @@ func RotateServiceToken(cfg *config.Config) http.HandlerFunc {
 			return
 		}
 
-		// Revoke the old token. Ignore error if it was already revoked.
 		var oldReg database.ServiceRegistration
 		if result := database.DB.Where("jti = ?", req.OldJTI).First(&oldReg); result.Error == nil {
 			database.DB.Create(&database.RevokedToken{
@@ -208,8 +183,6 @@ func RotateServiceToken(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-// ListRevokedTokens returns all currently revoked tokens.
-//
 // @Summary      List revoked tokens
 // @Description  Returns the full revocation list. Useful for auditing and verifying that a token has been properly revoked.
 // @Tags         admin

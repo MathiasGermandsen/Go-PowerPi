@@ -8,15 +8,12 @@ import (
 	"github.com/google/uuid"
 )
 
-// Claims is the JWT payload for service-to-service tokens.
 type Claims struct {
 	Service string   `json:"svc"`
 	Scopes  []string `json:"scopes"`
 	jwt.RegisteredClaims
 }
 
-// GenerateToken creates a signed HS256 JWT for a named service.
-// The returned string is the compact JWT and jti is the unique token ID.
 func GenerateToken(secret, service, audience string, scopes []string, expHours int) (tokenStr string, jti string, err error) {
 	if secret == "" {
 		return "", "", errors.New("JWT_SECRET must not be empty")
@@ -44,7 +41,6 @@ func GenerateToken(secret, service, audience string, scopes []string, expHours i
 	return tokenStr, jti, err
 }
 
-// ValidateToken parses and validates a compact JWT string, returning the claims.
 func ValidateToken(tokenStr, secret string) (*Claims, error) {
 	if secret == "" {
 		return nil, errors.New("JWT_SECRET must not be empty")
