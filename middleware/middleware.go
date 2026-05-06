@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"encoding/json"
 
-	"Power-Pi/auth"
 	"Power-Pi/database"
 )
 
@@ -28,7 +28,7 @@ func JWTMiddleware(secret string) func(http.Handler) http.Handler {
 				return
 			}
 
-			claims, err := auth.ValidateToken(parts[1], secret)
+			claims, err := ValidateToken(parts[1], secret)
 			if err != nil {
 				http.Error(w, "invalid or expired token", http.StatusUnauthorized)
 				return
@@ -55,12 +55,23 @@ func RequireScope(scope string) func(http.Handler) http.Handler {
 				return
 			}
 			for _, s := range claims.Scopes {
+				// Handle scopes stored as JSON arrays e.g. `["power-table:read"]`
 				if s == scope {
 					next.ServeHTTP(w, r)
 					return
+				}
+				var parsed []string
+				if err := json.Unmarshal([]byte(s), &parsed); err == nil {
+					for _, p := range parsed {
+						if p == scope {
+							next.ServeHTTP(w, r)
+							return
+						}
+					}
 				}
 			}
 			http.Error(w, "insufficient scope", http.StatusForbidden)
 		})
 	}
 }
+
