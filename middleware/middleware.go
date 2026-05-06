@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"Power-Pi/auth"
 	"Power-Pi/database"
 )
 
@@ -27,7 +28,7 @@ func JWTMiddleware(secret string) func(http.Handler) http.Handler {
 				return
 			}
 
-			claims, err := ValidateToken(parts[1], secret)
+			claims, err := auth.ValidateToken(parts[1], secret)
 			if err != nil {
 				http.Error(w, "invalid or expired token", http.StatusUnauthorized)
 				return
@@ -48,7 +49,7 @@ func JWTMiddleware(secret string) func(http.Handler) http.Handler {
 func RequireScope(scope string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			claims, ok := r.Context().Value(ClaimsContextKey).(*Claims)
+			claims, ok := r.Context().Value(ClaimsContextKey).(*auth.Claims)
 			if !ok || claims == nil {
 				http.Error(w, "unauthorized", http.StatusUnauthorized)
 				return
