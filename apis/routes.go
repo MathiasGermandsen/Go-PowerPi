@@ -3,7 +3,6 @@ package apis
 import (
 	"net/http"
 
-	"Power-Pi/auth"
 	"Power-Pi/config"
 	"Power-Pi/middleware"
 
@@ -17,14 +16,14 @@ func NewRouter(cfg *config.Config) *mux.Router {
 
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
-	jwtMw := auth.JWTMiddleware(cfg.JWTSecret)
+	jwtMw := middleware.JWTMiddleware(cfg.JWTSecret)
 
 	r.Handle("/power-table",
-		jwtMw(auth.RequireScope("power-table:read")(http.HandlerFunc(GetPowerTable))),
+		jwtMw(middleware.RequireScope("power-table:read")(http.HandlerFunc(GetPowerTable))),
 	).Methods(http.MethodGet)
 
 	r.Handle("/power-table",
-		jwtMw(auth.RequireScope("power-table:write")(http.HandlerFunc(CreatePowerTable))),
+		jwtMw(middleware.RequireScope("power-table:write")(http.HandlerFunc(CreatePowerTable))),
 	).Methods(http.MethodPost)
 
 	admin := r.PathPrefix("/admin").Subrouter()

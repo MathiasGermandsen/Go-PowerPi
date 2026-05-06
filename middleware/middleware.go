@@ -2,10 +2,11 @@ package middleware
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"strings"
-	"encoding/json"
 
+	"Power-Pi/auth"
 	"Power-Pi/database"
 )
 
@@ -28,7 +29,7 @@ func JWTMiddleware(secret string) func(http.Handler) http.Handler {
 				return
 			}
 
-			claims, err := ValidateToken(parts[1], secret)
+			claims, err := auth.ValidateToken(parts[1], secret)
 			if err != nil {
 				http.Error(w, "invalid or expired token", http.StatusUnauthorized)
 				return
