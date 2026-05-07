@@ -1,17 +1,42 @@
-basePath: /
 definitions:
   apis.IssueTokenRequest:
     properties:
       audience:
         type: string
       old_jti:
-        description: OldJTI is required only for token rotation (POST /admin/tokens/rotate).
         type: string
       scopes:
         items:
           type: string
         type: array
       service:
+        type: string
+    type: object
+  apis.PowerTableDoc:
+    properties:
+      company:
+        example: Acme Corp
+        type: string
+      createdAt:
+        example: "2026-04-23T10:00:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      numberOfHours:
+        example: 5
+        type: integer
+      price:
+        example: 99.99
+        type: number
+      selectionMode:
+        example: price-based
+        type: string
+      updatedAt:
+        example: "2026-04-23T10:00:00Z"
+        type: string
+      userId:
+        example: user-abc-123
         type: string
     type: object
   apis.RevokedTokenDoc:
@@ -46,13 +71,8 @@ definitions:
       token:
         type: string
     type: object
-host: localhost:8080
 info:
   contact: {}
-  description: Service-to-service API for Power Table management. All /power-table
-    endpoints require a JWT Bearer token. Admin endpoints require an X-Admin-Key header.
-  title: Power-Pi API
-  version: "1.0"
 paths:
   /admin/tokens:
     post:
@@ -197,11 +217,63 @@ paths:
       summary: Rotate a service token
       tags:
       - admin
-securityDefinitions:
-  BearerAuth:
-    description: 'JWT service token. Format: "Bearer {token}". Obtain a token via
-      POST /admin/tokens.'
-    in: header
-    name: Authorization
-    type: apiKey
+  /power-table:
+    get:
+      description: Returns all power table entries. Optionally filter by userId query
+        parameter.
+      parameters:
+      - description: Filter by user ID
+        in: query
+        name: userId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/apis.PowerTableDoc'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: List power table entries
+      tags:
+      - power-table
+    post:
+      consumes:
+      - application/json
+      description: Upserts a power table entry by userId. Updates company, price,
+        selectionMode, and numberOfHours on conflict.
+      parameters:
+      - description: Power table entry
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/apis.PowerTableDoc'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/apis.PowerTableDoc'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create or update a power table entry
+      tags:
+      - power-table
 swagger: "2.0"

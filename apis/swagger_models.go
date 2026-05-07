@@ -1,12 +1,14 @@
 package apis
 
 type PowerTableDoc struct {
-	ID        uint    `json:"id" example:"1"`
-	CreatedAt string  `json:"createdAt" example:"2026-04-23T10:00:00Z"`
-	UpdatedAt string  `json:"updatedAt" example:"2026-04-23T10:00:00Z"`
-	Price     float64 `json:"price" example:"99.99"`
-	Company   string  `json:"company" example:"Acme Corp"`
-	UserID    string  `json:"userId" example:"user-abc-123"`
+	ID            uint    `json:"id" example:"1"`
+	CreatedAt     string  `json:"createdAt" example:"2026-04-23T10:00:00Z"`
+	UpdatedAt     string  `json:"updatedAt" example:"2026-04-23T10:00:00Z"`
+	Price         float64 `json:"price" example:"99.99"`
+	Company       string  `json:"company" example:"Acme Corp"`
+	UserID        string  `json:"userId" example:"user-abc-123"`
+	SelectionMode string  `json:"selectionMode" example:"price-based"`
+	NumberOfHours int     `json:"numberOfHours" example:"5"`
 }
 
 type RevokedTokenDoc struct {

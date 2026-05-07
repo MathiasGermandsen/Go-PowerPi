@@ -224,6 +224,97 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/power-table": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns all power table entries. Optionally filter by userId query parameter.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "power-table"
+                ],
+                "summary": "List power table entries",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by user ID",
+                        "name": "userId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/apis.PowerTableDoc"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upserts a power table entry by userId. Updates company, price, selectionMode, and numberOfHours on conflict.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "power-table"
+                ],
+                "summary": "Create or update a power table entry",
+                "parameters": [
+                    {
+                        "description": "Power table entry",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apis.PowerTableDoc"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/apis.PowerTableDoc"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -234,7 +325,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "old_jti": {
-                    "description": "OldJTI is required only for token rotation (POST /admin/tokens/rotate).",
                     "type": "string"
                 },
                 "scopes": {
@@ -245,6 +335,43 @@ const docTemplate = `{
                 },
                 "service": {
                     "type": "string"
+                }
+            }
+        },
+        "apis.PowerTableDoc": {
+            "type": "object",
+            "properties": {
+                "company": {
+                    "type": "string",
+                    "example": "Acme Corp"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-04-23T10:00:00Z"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "numberOfHours": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "price": {
+                    "type": "number",
+                    "example": 99.99
+                },
+                "selectionMode": {
+                    "type": "string",
+                    "example": "price-based"
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "example": "2026-04-23T10:00:00Z"
+                },
+                "userId": {
+                    "type": "string",
+                    "example": "user-abc-123"
                 }
             }
         },
@@ -295,25 +422,17 @@ const docTemplate = `{
                 }
             }
         }
-    },
-    "securityDefinitions": {
-        "BearerAuth": {
-            "description": "JWT service token. Format: \"Bearer {token}\". Obtain a token via POST /admin/tokens.",
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
-        }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
-	Host:             "localhost:8080",
-	BasePath:         "/",
+	Version:          "",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Power-Pi API",
-	Description:      "Service-to-service API for Power Table management. All /power-table endpoints require a JWT Bearer token. Admin endpoints require an X-Admin-Key header.",
+	Title:            "",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

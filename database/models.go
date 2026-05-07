@@ -8,9 +8,11 @@ import (
 
 type PowerTable struct {
 	gorm.Model
-	Price   float64 `json:"price" gorm:"not null"`
-	Company string  `json:"company" gorm:"not null"`
-	UserID  string  `json:"userId" gorm:"uniqueIndex;not null"`
+	Price         float64 `json:"price" gorm:"not null"`
+	Company       string  `json:"company" gorm:"not null"`
+	UserID        string  `json:"userId" gorm:"uniqueIndex;not null"`
+	SelectionMode string  `json:"selectionMode" gorm:"not null;default:''"`
+	NumberOfHours int     `json:"numberOfHours" gorm:"not null;default:0"`
 }
 
 type RevokedToken struct {
