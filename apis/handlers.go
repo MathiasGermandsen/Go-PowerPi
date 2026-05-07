@@ -61,9 +61,19 @@ func CreatePowerTable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	updateCols := []string{"company", "selection_mode"}
+	switch req.SelectionMode {
+	case "price-based":
+		updateCols = append(updateCols, "price")
+	case "hour-based":
+		updateCols = append(updateCols, "number_of_hours")
+	default:
+		updateCols = append(updateCols, "price", "number_of_hours")
+	}
+
 	result := database.DB.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "user_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"company", "price", "selection_mode", "number_of_hours"}),
+		DoUpdates: clause.AssignmentColumns(updateCols),
 	}).Create(&req)
 	if result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
