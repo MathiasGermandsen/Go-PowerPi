@@ -26,6 +26,14 @@ func NewRouter(cfg *config.Config) *mux.Router {
 		jwtMw(middleware.RequireScope("power-table:write")(http.HandlerFunc(CreatePowerTable))),
 	).Methods(http.MethodPost)
 
+	r.Handle("/charging",
+		jwtMw(middleware.RequireScope("power-table:read")(http.HandlerFunc(GetCharging))),
+	).Methods(http.MethodGet)
+
+	r.Handle("/charging",
+		jwtMw(middleware.RequireScope("power-table:write")(http.HandlerFunc(SetCharging))),
+	).Methods(http.MethodPost)
+
 	admin := r.PathPrefix("/admin").Subrouter()
 	admin.Use(middleware.AdminKeyMiddleware(cfg.AdminAPIKey))
 

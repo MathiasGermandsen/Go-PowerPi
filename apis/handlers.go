@@ -84,3 +84,79 @@ func CreatePowerTable(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(req)
 }
+
+// @Summary      Get charging status
+// @Description  Returns the charging status for a given userId.
+// @Tags         charging
+// @Produce      json
+// @Param        userId  query     string  true  "User ID"
+// @Success      200     {object}  map[string]interface{}
+// @Failure      400     {string}  string  "Bad request"
+// @Failure      404     {string}  string  "Not found"
+// @Security     BearerAuth
+// @Router       /charging [get]
+func GetCharging(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("userId")
+	if userID == "" {
+		http.Error(w, "missing userId query parameter", http.StatusBadRequest)
+		return
+	}
+
+	var row database.PowerTable
+	if result := database.DB.Where("user_id = ?", userID).First(&row); result.Error != nil {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"userId":   row.UserID,
+		"charging": row.Charging,
+	})
+}
+
+// @Summary      Set charging status
+// @Description  Updates the charging status for a given userId.
+// @Tags         charging
+// @Accept       json
+// @Produce      json
+// @Param        body  body      object{userId=string,charging=bool}  true  "Charging status"
+// @Success      200   {object}  map[string]interface{}
+// @Failure      400   {string}  string  "Bad request"
+// @Failure      404   {string}  string  "Not found"
+// @Failure      500   {string}  string  "Internal server error"
+// @Security     BearerAuth
+// @Router       /charging [post]
+func SetCharging(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		UserID   string `json:"userId"`
+		Charging bool   `json:"charging"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if req.UserID == "" {
+		http.Error(w, "missing userId", http.StatusBadRequest)
+		return
+	}
+
+	var row database.PowerTable
+	if result := database.DB.Where("user_id = ?", req.UserID).First(&row); result.Error != nil {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+
+	if result := database.DB.Model(&row).Update("charging", req.Charging); result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"userId":   row.UserID,
+		"charging": req.Charging,
+	})
+}

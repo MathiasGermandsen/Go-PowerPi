@@ -13,6 +13,7 @@ type PowerTable struct {
 	UserID        string  `json:"userId" gorm:"uniqueIndex;not null"`
 	SelectionMode string  `json:"selectionMode" gorm:"not null;default:''"`
 	NumberOfHours int     `json:"numberOfHours" gorm:"not null;default:0"`
+	Charging      bool    `json:"charging" gorm:"not null;default:false"`
 }
 
 type RevokedToken struct {
