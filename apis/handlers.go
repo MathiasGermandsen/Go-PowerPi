@@ -120,17 +120,23 @@ func GetCharging(w http.ResponseWriter, r *http.Request) {
 // @Tags         charging
 // @Accept       json
 // @Produce      json
-// @Param        body  body      object{userId=string,charging=bool}  true  "Charging status"
-// @Success      200   {object}  map[string]interface{}
-// @Failure      400   {string}  string  "Bad request"
-// @Failure      404   {string}  string  "Not found"
-// @Failure      500   {string}  string  "Internal server error"
+// @Param        userId  query     string                  true  "User ID"
+// @Param        body    body      object{charging=bool}   true  "Charging status"
+// @Success      200     {object}  map[string]interface{}
+// @Failure      400     {string}  string  "Bad request"
+// @Failure      404     {string}  string  "Not found"
+// @Failure      500     {string}  string  "Internal server error"
 // @Security     BearerAuth
 // @Router       /charging [post]
 func SetCharging(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("userId")
+	if userID == "" {
+		http.Error(w, "missing userId query parameter", http.StatusBadRequest)
+		return
+	}
+
 	var req struct {
-		UserID   string `json:"userId"`
-		Charging bool   `json:"charging"`
+		Charging bool `json:"charging"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -138,13 +144,8 @@ func SetCharging(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.UserID == "" {
-		http.Error(w, "missing userId", http.StatusBadRequest)
-		return
-	}
-
 	var row database.PowerTable
-	if result := database.DB.Where("user_id = ?", req.UserID).First(&row); result.Error != nil {
+	if result := database.DB.Where("user_id = ?", userID).First(&row); result.Error != nil {
 		http.Error(w, "user not found", http.StatusNotFound)
 		return
 	}
@@ -156,7 +157,7 @@ func SetCharging(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"userId":   row.UserID,
+		"userId":   userID,
 		"charging": req.Charging,
 	})
 }

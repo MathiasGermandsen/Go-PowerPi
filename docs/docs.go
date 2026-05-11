@@ -290,6 +290,13 @@ const docTemplate = `{
                 "summary": "Set charging status",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
                         "description": "Charging status",
                         "name": "body",
                         "in": "body",
@@ -299,9 +306,6 @@ const docTemplate = `{
                             "properties": {
                                 "charging": {
                                     "type": "boolean"
-                                },
-                                "userId": {
-                                    "type": "string"
                                 }
                             }
                         }
