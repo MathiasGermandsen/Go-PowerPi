@@ -247,7 +247,7 @@ paths:
       summary: Get charging status
       tags:
       - charging
-    post:
+    patch:
       consumes:
       - application/json
       description: Updates the charging status for a given userId.

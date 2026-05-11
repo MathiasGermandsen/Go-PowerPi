@@ -127,7 +127,7 @@ func GetCharging(w http.ResponseWriter, r *http.Request) {
 // @Failure      404     {string}  string  "Not found"
 // @Failure      500     {string}  string  "Internal server error"
 // @Security     BearerAuth
-// @Router       /charging [post]
+// @Router       /charging [patch]
 func SetCharging(w http.ResponseWriter, r *http.Request) {
 	userID := r.URL.Query().Get("userId")
 	if userID == "" {

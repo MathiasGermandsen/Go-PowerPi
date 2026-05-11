@@ -271,7 +271,7 @@ const docTemplate = `{
                     }
                 }
             },
-            "post": {
+            "patch": {
                 "security": [
                     {
                         "BearerAuth": []
